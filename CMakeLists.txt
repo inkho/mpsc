@@ -1,0 +1,13 @@
+PROJECT(MultiQueueProcessor)
+
+CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
+
+SET(Boost_USE_STATIC_LIBS ON)
+FIND_PACKAGE(Boost REQUIRED COMPONENTS unit_test_framework)
+
+ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
+
+FILE(GLOB SOURCE_FILES "*.cpp")
+
+ADD_EXECUTABLE(MultiQueueProcessor ${SOURCE_FILES})
+TARGET_LINK_LIBRARIES(MultiQueueProcessor pthread boost_system boost_unit_test_framework)
