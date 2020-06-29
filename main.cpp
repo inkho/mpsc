@@ -18,6 +18,23 @@ private:
     size_t consumed = 0;
 };
 
+template <typename Key, typename Value>
+class RecursiveConsumer : public IConsumer<std::string, std::string>
+{
+public:
+    RecursiveConsumer(MultiQueueProcessor<Key, Value> &processor_) : processor(processor_) {}
+
+    void Consume(const std::string & id, const std::string & value) noexcept override
+    {
+        processor.Unsubscribe("key");
+        processor.Enqueue("key", "value");
+        processor.Enqueue("key", "value");
+    }
+
+private:
+    MultiQueueProcessor<Key, Value> &processor;
+};
+
 BOOST_AUTO_TEST_CASE(test_enque_deque)
 {
     MultiQueueProcessor<std::string, std::string> processor;
@@ -54,6 +71,16 @@ BOOST_AUTO_TEST_CASE(test_out_of_scope)
         processor.Enqueue("key1", "value1");
     }
     BOOST_CHECK(true);
+}
+
+BOOST_AUTO_TEST_CASE(test_recursive)
+{
+    MultiQueueProcessor<std::string, std::string> processor;
+    RecursiveConsumer<std::string, std::string> recursive_consumer(processor);
+    processor.Subscribe("key", &recursive_consumer);
+    processor.Enqueue("key", "value");
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
 BOOST_AUTO_TEST_CASE(test_produce_consume)
