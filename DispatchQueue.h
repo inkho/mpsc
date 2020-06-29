@@ -19,20 +19,18 @@ public:
     }
 
     template<typename T>
-    void dispatch(T && task) noexcept
-    {
-        io_service.post([this, task = std::move(task)]() mutable noexcept {task();});
-    }
-
-    template<typename T>
-    auto dispatch_sync(T && task) noexcept
+    auto dispatch(T && task) noexcept
     {
         if (std::this_thread::get_id() == thread.get_id())
             return task();
 
-        std::packaged_task<decltype(task())()> packaged_task(std::move(task));
-        dispatch([&packaged_task]() noexcept {packaged_task();});
-        return packaged_task.get_future().get();
+        if (std::is_same<decltype(task()), void>::value) {
+            io_service.post([this, task = std::move(task)]() mutable noexcept {task();});
+        } else {
+            std::packaged_task<decltype(task())()> packaged_task(std::move(task));
+            io_service.post([this, &packaged_task]() mutable noexcept {packaged_task();});
+            return packaged_task.get_future().get();
+        }
     }
 
 private:
