@@ -21,9 +21,6 @@ public:
     template<typename T>
     auto dispatch(T && task) noexcept
     {
-        if (std::this_thread::get_id() == thread.get_id())
-            return task();
-
         if (std::is_same<decltype(task()), void>::value) {
             io_service.post([this, task = std::move(task)]() mutable noexcept {task();});
         } else {
@@ -31,6 +28,15 @@ public:
             io_service.post([this, &packaged_task]() mutable noexcept {packaged_task();});
             return packaged_task.get_future().get();
         }
+    }
+
+    template<typename T>
+    auto dispatch_or_call(T && task) noexcept
+    {
+        if (std::this_thread::get_id() == thread.get_id())
+            return task();
+
+        return dispatch(std::forward<T>(task));
     }
 
 private:

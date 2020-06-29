@@ -20,7 +20,7 @@ public:
 
     virtual void Subscribe(const Key & id, IConsumer<Key, Value> * consumer) noexcept
     {
-        dispatch_queue.dispatch(
+        dispatch_queue.dispatch_or_call(
             [this, id = std::move(id), consumer]() mutable noexcept
             {
                 auto & queue = queues[id];
@@ -34,7 +34,7 @@ public:
 
     virtual void Unsubscribe(const Key & id) noexcept
     {
-        dispatch_queue.dispatch(
+        dispatch_queue.dispatch_or_call(
             [this, id]() noexcept
             {
                 auto queue_it = queues.find(id);
@@ -52,7 +52,7 @@ public:
     template<typename T>
     void Enqueue(const Key & id, T && value) noexcept
     {
-        dispatch_queue.dispatch(
+        dispatch_queue.dispatch_or_call(
             [this, id = std::move(id), value = std::move(value)]() mutable noexcept
             {
                 auto & queue = queues[id];
@@ -68,7 +68,7 @@ public:
 
     virtual Value Dequeue(const Key & id) noexcept
     {
-        return dispatch_queue.dispatch(
+        return dispatch_queue.dispatch_or_call(
             [this, id]() noexcept
             {
                 auto queue_it = queues.find(id);
