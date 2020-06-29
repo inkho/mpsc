@@ -29,7 +29,6 @@ public:
         processor.Unsubscribe("key");
         processor.Enqueue("key", "value");
         processor.Enqueue("key", "value");
-        BOOST_CHECK(!processor.Dequeue("key").empty());
     }
 
 private:
@@ -82,9 +81,6 @@ BOOST_AUTO_TEST_CASE(test_recursive)
     processor.Enqueue("key", "value");
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-
-    BOOST_CHECK(!processor.Dequeue("key").empty());
-    BOOST_CHECK(processor.Dequeue("key").empty());
 }
 
 BOOST_AUTO_TEST_CASE(test_produce_consume)
