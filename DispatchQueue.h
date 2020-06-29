@@ -27,7 +27,8 @@ public:
     template<typename T>
     auto dispatch_sync(T && task) noexcept
     {
-        assert(std::this_thread::get_id() != thread.get_id() && "Infinite recursion detected");
+        if (std::this_thread::get_id() == thread.get_id())
+            return task();
 
         std::packaged_task<decltype(task())()> packaged_task(std::move(task));
         dispatch([&packaged_task]() noexcept {packaged_task();});
